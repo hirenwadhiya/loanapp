@@ -2,9 +2,9 @@
 
 return [
     'user' => [
-        'create' => [
-            'success' => 'User created successfully',
-            'error' => 'Error in creating user'
-        ]
+        'login' => [
+            'success' => 'User logged in successfully',
+            'error' => 'Error in log in'
+        ],
     ]
 ];

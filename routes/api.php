@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\LoanController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,5 +19,6 @@ use Illuminate\Support\Facades\Route;
 //Route::middleware('auth:api')->get('/user', function (Request $request) {
 //    return $request->user();
 //});
-Route::post('/register', [AuthController::class, 'register'])->name('user.register');
+
 Route::post('/login', [AuthController::class, 'login'])->name('user.login');
+Route::post('/get-loan', [LoanController::class, 'getLoan'])->name('loan.get');

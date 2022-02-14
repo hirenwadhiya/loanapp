@@ -14,6 +14,16 @@ class Installment extends Model
         'loan_id',
         'installment_number',
         'installment_amount',
-        'installment_date'
+        'installment_date',
+        'payment_status'
     ];
+
+    protected $hidden = [
+        'created_at',
+        'updated_at'
+    ];
+
+    public function loan(){
+        return $this->belongsTo(Loan::class,'loan_id','id');
+    }
 }

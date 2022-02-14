@@ -63,10 +63,10 @@ class Install extends Command
         Artisan::call('migrate',['--force' => true]);
         $this->comment('Database migration completed.');
 
-        //
+        //generate passport keys
         $this->info('Generating Encrypted Passport keys');
         Artisan::call('passport:install',['--force' => true]);
-        $this->comment('Database migration completed.');
+        $this->comment('Passport keys generated.');
 
         //run database seeders
         $this->info('Seeding database data...');

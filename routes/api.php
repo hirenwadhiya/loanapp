@@ -22,3 +22,4 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login'])->name('user.login');
 Route::post('/get-loan', [LoanController::class, 'getLoan'])->name('loan.get');
+Route::post('/pay-loan-installment', [LoanController::class, 'payLoanInstallment'])->name('loan.installment');

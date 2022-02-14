@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\BaseController;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GetLoanRequest;
+use App\Http\Requests\PayInstallmentRequest;
 use App\Models\Installment;
 use App\Models\Loan;
 use App\Models\User;
@@ -50,7 +51,14 @@ class LoanController extends BaseController
                 $installment[$i]['updated_at'] = now();
             }
 
-            Loan::where('id','=',$loan->id)->first()->installments()->insert($installment);
+            $loan->installments()->insert($installment);
+            $loan->ledger()->create([
+                'loan_id'           => $loan->id,
+                'paid_amount'       => 0,
+                'remaining_amount'  => $input['amount'],
+                'paid_installments' => 0,
+                'remaining_installments' => $input['term']
+            ]);
 
             $data = Loan::with('user')->where('id','=',$loan->id)->first();
             return $this->sendResponse(__('message.loan.approve.success'),$data);
@@ -62,5 +70,38 @@ class LoanController extends BaseController
         $updateLoan = Loan::where('id','=',$loanId)
             ->where('user_id','=',$userId)
             ->update(['status' => 1]);
+    }
+
+    public function payLoanInstallment(PayInstallmentRequest $request){
+        $input = $request->only('loan_title');
+        $loan = Loan::with('installments','ledger')
+            ->where('loan_title','=',$input['loan_title'])
+            ->first();
+
+        if ($loan != null){
+            $installmentToBePaid = $loan->installments
+                ->where('payment_status','=',0)
+                ->first();
+            if ($installmentToBePaid != null){
+                $installmentToBePaid->update(['payment_status' => 1]);
+
+                $installmentAmount      = $installmentToBePaid->installment_amount;
+                $paidAmount             = $loan->ledger->paid_amount;
+                $remainingAmount        = $loan->ledger->remaining_amount;
+                $paidInstallments       = $loan->ledger->paid_installments;
+                $remainingInstallments  = $loan->ledger->remaining_installments;
+
+                $updateLedger = $loan->ledger->update([
+                    'paid_amount'           => $paidAmount + $installmentAmount,
+                    'remaining_amount'      => $remainingAmount - $installmentAmount,
+                    'paid_installments'     => $paidInstallments + 1,
+                    'remaining_installments'=> $remainingInstallments - 1
+                ]);
+
+                return $this->sendResponse(__('message.installment.payment.success'), $installmentToBePaid);
+            }
+            $loan->update(['status' => 2]);
+            return $this->sendError(__('message.installment.payment.no_inst'), Response::HTTP_BAD_REQUEST);
+        }
     }
 }

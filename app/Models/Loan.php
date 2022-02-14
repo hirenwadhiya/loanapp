@@ -29,6 +29,10 @@ class Loan extends Model
     }
 
     public function installments(){
-        return $this->hasMany(Installment::class,'loan_id','id');
+        return $this->hasMany(Installment::class,'loan_id','id')->orderBy('installment_number','asc');
+    }
+
+    public function ledger(){
+        return $this->hasOne(LoanLedger::class,'loan_id','id');
     }
 }

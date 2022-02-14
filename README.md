@@ -9,9 +9,8 @@ Follow steps given below to install/setup Loan App on your machine.
 - `git clone https://github.com/hirenwadhiya/loanapp.git`
 - Copy .env file
 - `cp .env.example .env`
+- Create a database and fill the correct DB credentials in the .env file
 - Install packages 
 - `composer install`
-- Create a database and fill the correct DB credentials in the .env file
 - Run following command to install Loan app
 - `php artisan loanapp:install`
-

@@ -3,13 +3,9 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\BaseController;
-use App\Http\Controllers\Controller;
 use App\Http\Requests\GetLoanRequest;
 use App\Http\Requests\PayInstallmentRequest;
-use App\Models\Installment;
 use App\Models\Loan;
-use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
@@ -39,8 +35,11 @@ class LoanController extends BaseController
 
     public function getLoan(GetLoanRequest $request){
         $input = $request->all();
+
+        //random loan name
         $loanTitle = 'LOAN-APP-'.rand(1111,999999);
 
+        //create loan record
         $loan = Loan::create([
             'loan_title'    => $loanTitle,
             'user_id'       => Auth::id(),
@@ -52,11 +51,13 @@ class LoanController extends BaseController
         ]);
 
         if ($loan->id){
+            //approve loan
             $this->approveLoan($loan->id, $loan->user_id);
 
             $installment = [];
             $installmentAmount = $input['amount']/$input['term'];
 
+            //create installment array
             for($i=0; $i<$input['term']; $i++){
                 $installment[$i]['user_id'] = Auth::id();
                 $installment[$i]['loan_id'] = $loan->id;
@@ -67,8 +68,9 @@ class LoanController extends BaseController
                 $installment[$i]['created_at'] = now();
                 $installment[$i]['updated_at'] = now();
             }
-
             $loan->installments()->insert($installment);
+
+            //create relational record for loan ledger
             $loan->ledger()->create([
                 'loan_id'           => $loan->id,
                 'paid_amount'       => 0,
@@ -96,10 +98,13 @@ class LoanController extends BaseController
             ->first();
 
         if ($loan != null){
+            //find first unpaid installment
             $installmentToBePaid = $loan->installments
                 ->where('payment_status','=',0)
                 ->first();
+
             if ($installmentToBePaid != null){
+                //update status of installment
                 $installmentToBePaid->update(['payment_status' => 1]);
 
                 $installmentAmount      = $installmentToBePaid->installment_amount;
@@ -108,6 +113,7 @@ class LoanController extends BaseController
                 $paidInstallments       = $loan->ledger->paid_installments;
                 $remainingInstallments  = $loan->ledger->remaining_installments;
 
+                //update ledger
                 $updateLedger = $loan->ledger->update([
                     'paid_amount'           => $paidAmount + $installmentAmount,
                     'remaining_amount'      => $remainingAmount - $installmentAmount,
@@ -117,6 +123,13 @@ class LoanController extends BaseController
 
                 return $this->sendResponse(__('message.installment.payment.success'), $installmentToBePaid);
             }
+
+            /*
+             * update loan status if all installments are paid
+             * loan status 0 = pending approval
+             * loan status 1 = approved
+             * loan status 2 = all installment paid
+             */
             $loan->update(['status' => 2]);
             return $this->sendError(__('message.installment.payment.no_inst'), Response::HTTP_BAD_REQUEST);
         }

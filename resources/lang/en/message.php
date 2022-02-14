@@ -11,6 +11,11 @@ return [
         'approve' => [
             'success'   => 'Loan has been approved',
             'error'     => 'Loan can not be approved. Try again later'
+        ],
+        'list' => [
+            'success'   => 'Loans listed successfully',
+            'error'     => 'Error in fetching Loan data',
+            'no_loan'   => 'You do not have any active loan'
         ]
     ],
     'installment' => [

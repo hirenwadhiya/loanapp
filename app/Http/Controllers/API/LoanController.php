@@ -20,6 +20,23 @@ class LoanController extends BaseController
         $this->middleware(['auth:api']);
     }
 
+    public function index(){
+        $data = [];
+        $user = Auth::id();
+        $loans = Loan::where('user_id','=', $user)->get();
+
+        if ($loans->count() > 0){
+            $data['loans'] = $loans;
+            return $this->sendResponse(__('message.loan.list.success'), $data);
+        }
+
+        if ($loans->count() == 0){
+            return $this->sendResponse(__('message.loan.list.no_loan'), $data);
+        }
+
+        return $this->sendError(__('message.loan.list.error'), Response::HTTP_BAD_REQUEST);
+    }
+
     public function getLoan(GetLoanRequest $request){
         $input = $request->all();
         $loanTitle = 'LOAN-APP-'.rand(1111,999999);

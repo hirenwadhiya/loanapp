@@ -7,6 +7,8 @@ Follow steps given below to install/setup Loan App on your machine.
 
 - Clone the Repo
 - `git clone https://github.com/hirenwadhiya/loanapp.git`
+- Copy .env file
+- `cp .env.example .env`
 - Install packages 
 - `composer install`
 - Create a database and fill the correct DB credentials in the .env file
